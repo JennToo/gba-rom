@@ -34,7 +34,7 @@ $(CROSS_DESC): | target
 target target/asm:
 	mkdir -p $@
 
-mgba:
+mgba: $(ROM)
 	mgba-qt $(ROM)
 
 clean:
