@@ -1,0 +1,8 @@
+[package]
+name = "gba-rom"
+version = "0.1.0"
+authors = ["Jennifer Wilcox <jennifer@nitori.org>"]
+edition = "2018"
+
+[dependencies]
+gba = "*"
