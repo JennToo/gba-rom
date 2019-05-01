@@ -2,6 +2,7 @@
 #![feature(start)]
 
 use gba::io::display;
+use gba::palram;
 use gba::vram::bitmap;
 use gba::Color;
 
@@ -13,12 +14,25 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 #[start]
 fn main(_argc: isize, _argv: *const *const u8) -> isize {
     let ctrl = display::DisplayControlSetting::new()
-        .with_mode(display::DisplayMode::Mode3)
-        .with_bg2(true);
+        .with_mode(display::DisplayMode::Mode0)
+        .with_bg0(true);
     display::set_display_control(ctrl);
-    bitmap::Mode3::write_pixel(120, 80, Color::from_rgb(31, 0, 0));
-    bitmap::Mode3::write_pixel(136, 80, Color::from_rgb(0, 31, 0));
-    bitmap::Mode3::write_pixel(120, 96, Color::from_rgb(0, 0, 31));
+
+    unsafe {
+        let ptr = 0x600_0000 as *mut u8;
+
+        for (i, b) in FONT.iter().enumerate() {
+            ptr.offset(i as isize).write_volatile(*b);
+        }
+    }
+
+    for i in 0..255 {
+        palram::index_palram_bg_8bpp(i).write(Color::from_rgb(
+            i as u16,
+            (255 - i) as u16,
+            i as u16 / 2,
+        ));
+    }
 
     loop {}
 }
@@ -27,3 +41,5 @@ fn main(_argc: isize, _argv: *const *const u8) -> isize {
 static __IRQ_HANDLER: extern "C" fn() = irq_handler;
 
 extern "C" fn irq_handler() {}
+
+const FONT: &[u8] = include_bytes!("../target/font.bin");
