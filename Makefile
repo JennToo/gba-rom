@@ -4,7 +4,6 @@ AS = $(DEVKIT_ARM_ROOT)/bin/arm-none-eabi-as
 LD = $(DEVKIT_ARM_ROOT)/bin/arm-none-eabi-ld
 OBJCOPY = $(DEVKIT_ARM_ROOT)/bin/arm-none-eabi-objcopy
 GBAFIX = $(DEVKIT_ARM_ROOT)/../tools/bin/gbafix
-BMP2BIN = $(DEVKIT_ARM_ROOT)/../tools/bin/bmp2bin
 
 CROSS_DESC = target/thumbv4-none-agb.json
 
@@ -46,7 +45,7 @@ $(FONT_BMP): $(FONT_SRC) | target
 	convert $^ -resize 25% $@
 
 $(FONT_BIN): $(FONT_BMP)
-	$(BMP2BIN) -i $^ $@
+	j2-gba-tool gfx-convert bg256c1p $^ $@ $@.pal
 
 clean:
 	rm -rf target

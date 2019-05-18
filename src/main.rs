@@ -49,4 +49,4 @@ static __IRQ_HANDLER: extern "C" fn() = irq_handler;
 extern "C" fn irq_handler() {}
 
 const FONT: &[u8] = include_bytes!("../target/font.bin");
-const FONT_PAL: &[u8] = include_bytes!("../target/font-pal.bin");
+const FONT_PAL: &[u8] = include_bytes!("../target/font.bin.pal");
