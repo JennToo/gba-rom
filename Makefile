@@ -44,7 +44,7 @@ mgba: $(ROM)
 $(FONT_BMP): $(FONT_SRC) | target
 	convert $^ -resize 25% $@
 
-$(FONT_BIN): $(FONT_BMP)
+$(FONT_BIN): $(FONT_SRC)
 	j2-gba-tool gfx-convert bg256c1p $^ $@ $@.pal
 
 clean:

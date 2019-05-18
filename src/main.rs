@@ -1,6 +1,7 @@
 #![no_std]
 #![feature(start)]
 
+use gba::io::background;
 use gba::io::display;
 use gba::palram;
 use gba::vram::bitmap;
@@ -13,11 +14,21 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 
 #[start]
 fn main(_argc: isize, _argv: *const *const u8) -> isize {
+    display::spin_until_vblank();
+
     let ctrl = display::DisplayControlSetting::new()
         .with_mode(display::DisplayMode::Mode0)
         .with_bg0(true);
     display::set_display_control(ctrl);
-    display::spin_until_vblank();
+
+    background::BG0CNT.write(
+        background::BackgroundControlSetting::new()
+            .with_bg_priority(0)
+            .with_char_base_block(0)
+            .with_screen_base_block(8)
+            .with_mosaic(false)
+            .with_is_8bpp(true)
+    );
 
     unsafe {
         let ptr = 0x600_0000 as *mut u16;
@@ -39,6 +50,20 @@ fn main(_argc: isize, _argv: *const *const u8) -> isize {
             ptr.offset(i as isize).write_volatile(v);
         }
     }
+
+    unsafe {
+        let ptr = 0x600_4000 as *mut u16;
+        for i in 0..256 {
+            ptr.offset(i).write_volatile(0);
+        }
+
+        let msg = b"Hello there!";
+        for i in 0..msg.len() {
+            ptr.offset(i as isize).write_volatile(msg[i] as u16);
+        }
+    }
+
+
 
     loop {}
 }

@@ -1,4 +1,0 @@
-CC-BY-SA
-
-Font by darkrose
-https://opengameart.org/content/8x8-ascii-bitmap-font-with-c-source
