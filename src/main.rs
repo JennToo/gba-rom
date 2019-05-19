@@ -1,70 +1,12 @@
 #![no_std]
 #![feature(start)]
+#![feature(panic_info_message)]
 
-use gba::io::background;
-use gba::io::display;
-use gba::palram;
-use gba::vram::bitmap;
-use gba::Color;
-
-#[panic_handler]
-fn panic(_info: &core::panic::PanicInfo) -> ! {
-    loop {}
-}
+mod panic;
 
 #[start]
 fn main(_argc: isize, _argv: *const *const u8) -> isize {
-    display::spin_until_vblank();
-
-    let ctrl = display::DisplayControlSetting::new()
-        .with_mode(display::DisplayMode::Mode0)
-        .with_bg0(true);
-    display::set_display_control(ctrl);
-
-    background::BG0CNT.write(
-        background::BackgroundControlSetting::new()
-            .with_bg_priority(0)
-            .with_char_base_block(0)
-            .with_screen_base_block(8)
-            .with_mosaic(false)
-            .with_is_8bpp(true)
-    );
-
-    unsafe {
-        let ptr = 0x600_0000 as *mut u16;
-
-        for i in 0..FONT.len() / 2 {
-            let l = FONT[2 * i] as u16;
-            let h = FONT[2 * i + 1] as u16;
-            let v = (h << 8) | l;
-            ptr.offset(i as isize).write_volatile(v);
-        }
-    }
-    unsafe {
-        let ptr = 0x500_0000 as *mut u16;
-
-        for i in 0..FONT_PAL.len() / 2 {
-            let l = FONT_PAL[2 * i] as u16;
-            let h = FONT_PAL[2 * i + 1] as u16;
-            let v = (h << 8) | l;
-            ptr.offset(i as isize).write_volatile(v);
-        }
-    }
-
-    unsafe {
-        let ptr = 0x600_4000 as *mut u16;
-        for i in 0..256 {
-            ptr.offset(i).write_volatile(0);
-        }
-
-        let msg = b"Hello there!";
-        for i in 0..msg.len() {
-            ptr.offset(i as isize).write_volatile(msg[i] as u16);
-        }
-    }
-
-
-
+    panic!("Hello there!");
     loop {}
 }
 
@@ -72,6 +14,3 @@ fn main(_argc: isize, _argv: *const *const u8) -> isize {
 static __IRQ_HANDLER: extern "C" fn() = irq_handler;
 
 extern "C" fn irq_handler() {}
-
-const FONT: &[u8] = include_bytes!("../target/font.bin");
-const FONT_PAL: &[u8] = include_bytes!("../target/font.bin.pal");
