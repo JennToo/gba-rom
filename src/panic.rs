@@ -85,6 +85,9 @@ fn prepare_console() -> Console {
             .with_is_8bpp(true),
     );
 
+    background::BG0HOFS.write(0);
+    background::BG0VOFS.write(0);
+
     unsafe {
         let font_dest = 0x600_0000 as *mut u32;
         cpu_fast_set(
