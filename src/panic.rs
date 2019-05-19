@@ -1,7 +1,10 @@
 use core::fmt::Write;
 
+use gba::bios::cpu_fast_set;
 use gba::io::background;
 use gba::io::display;
+
+use crate::include_bytes_aligned;
 
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
@@ -30,8 +33,9 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
     loop {}
 }
 
-const FONT: &[u8] = include_bytes!("../target/font.bin");
-const FONT_PAL: &[u8] = include_bytes!("../target/font.bin.pal");
+
+const FONT: &[u8] = include_bytes_aligned!("../target/font.bin");
+const FONT_PAL: &[u8] = include_bytes_aligned!("../target/font.bin.pal");
 const SCREEN_WIDTH_TILES: usize = 240 / 8;
 const SCREEN_HEIGHT_TILES: usize = 160 / 8;
 const BG_WIDTH_TILES: usize = 256 / 8;
@@ -82,24 +86,21 @@ fn prepare_console() -> Console {
     );
 
     unsafe {
-        let ptr = 0x600_0000 as *mut u16;
+        let font_dest = 0x600_0000 as *mut u32;
+        cpu_fast_set(
+            FONT.as_ptr() as *mut u32,
+            font_dest,
+            (FONT.len() / 4) as u32,
+            false,
+        );
 
-        for i in 0..FONT.len() / 2 {
-            let l = FONT[2 * i] as u16;
-            let h = FONT[2 * i + 1] as u16;
-            let v = (h << 8) | l;
-            ptr.offset(i as isize).write_volatile(v);
-        }
-    }
-    unsafe {
-        let ptr = 0x500_0000 as *mut u16;
-
-        for i in 0..FONT_PAL.len() / 2 {
-            let l = FONT_PAL[2 * i] as u16;
-            let h = FONT_PAL[2 * i + 1] as u16;
-            let v = (h << 8) | l;
-            ptr.offset(i as isize).write_volatile(v);
-        }
+        let font_pal_dest = 0x500_0000 as *mut u32;
+        cpu_fast_set(
+            FONT_PAL.as_ptr() as *mut u32,
+            font_pal_dest,
+            (FONT_PAL.len() / 4) as u32,
+            false,
+        );
     }
 
     for y in 0..SCREEN_HEIGHT_TILES {
